@@ -1,8 +1,10 @@
 package com.example.eventra.presentation.HomeScreen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.eventra.ui.theme.AppGradient
+import com.example.eventra.ui.theme.mainColor
 
 @Composable
 fun EventsCard(
@@ -25,17 +28,19 @@ fun EventsCard(
     items: List<String>,
     modifier: Modifier = Modifier,
     backgroundColor: Color? = null,
-    backgroundBrush: Brush? = null
+    backgroundBrush: Brush? = null,
+    onClick: () -> Unit = {}
+
 
     ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().clickable { onClick() },
         shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 16.dp, bottomEnd = 16.dp),
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor ?: Color.Transparent
         )
     ) {
-        Column(modifier = Modifier.then(
+        Column(modifier = Modifier.fillMaxWidth().then(
             if (backgroundBrush != null)
                 Modifier.background(backgroundBrush)
             else Modifier
@@ -43,14 +48,21 @@ fun EventsCard(
 
             Text(
                 text = title,
-                color =   if (backgroundBrush != null) Color.White else Color.Black,
+                color =   if (backgroundBrush != null) Color.White else mainColor,
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            items.forEach { item ->
-                Text(text = item, color = if (backgroundBrush != null) Color.White else Color.Black,)
+            items.forEachIndexed { index, item ->
+                Text(
+                    text = item,
+                    color = if (backgroundBrush != null) Color.White else mainColor
+                )
+
+                if (index != items.lastIndex) { // add space after all but last item
+                    Spacer(modifier = Modifier.height(8.dp)) // adjust height as needed
+                }
             }
         }
     }

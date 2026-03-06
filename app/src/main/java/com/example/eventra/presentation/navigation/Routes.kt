@@ -7,4 +7,8 @@ sealed class Screen(val route: String) {
     object OnBoardingAuthScreen : Screen("OnBoardingAuthScreen")
     object SignInScreen : Screen("SignInScreen")
     object SignUpScreen: Screen("SignUpScreen")
+    object AddEvent: Screen("AddEvent")
+    object UpdateEvent: Screen("UpdateEvent")
+    object TodaysEventDetailScreen: Screen("TodaysEventDetailScreen")
+    object UpcomingEventDetailScreen: Screen("UpcomingEventDetailScreen")
 }

@@ -1,17 +1,12 @@
 package com.example.eventra.presentation.AuthScreens
 
 import AuthLayout
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,20 +16,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.eventra.presentation.component.AppButton
 import com.example.eventra.presentation.component.AppTextField
-import com.example.eventra.ui.theme.mainColor
 
 @Composable
-fun SignUpScreen(navController: NavController) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var name by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var rememberMe by remember { mutableStateOf(false) }
+fun SignUpScreen(navController: NavController, viewModel: SignUpScreenViewModel= viewModel()) {
+
+   val name = viewModel.name
+    val email = viewModel.email
+    val password = viewModel.password
+    val confirmPassword = viewModel.confirmPassword
+    val rememberMe = viewModel.rememberMe
+
+
 
     AuthLayout(
         showBackButton = true,
@@ -48,31 +45,29 @@ fun SignUpScreen(navController: NavController) {
 
                 AppTextField(
                     value = name,
-                    onValueChange = {name=it},
+                    onValueChange = {viewModel.onNameChange(it)},
                     placeholder = "Name",
-                    isPassword = false
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
                 AppTextField(
                     value = email,
-                    onValueChange = {email=it},
+                    onValueChange = {viewModel.onEmailChange(it)},
                     placeholder = "Email",
-                    isPassword = false
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 AppTextField(
                     value = password,
-                    onValueChange = {password=it},
+                    onValueChange = {viewModel.onPasswordChange(it)},
                     placeholder = "Password",
-                    isPassword = true
+                    isPassword = true,
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 AppTextField(
                     value = confirmPassword,
-                    onValueChange = {confirmPassword=it},
+                    onValueChange = {viewModel.onConfirmPasswordChange(it)},
                     placeholder = "Confirm Password",
-                    isPassword = true
+                    isPassword = true,
                 )
                 Spacer(modifier = Modifier.height(40.dp))
 

@@ -2,7 +2,6 @@ package com.example.eventra.presentation.AuthScreens
 
 import AuthLayout
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,18 +22,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.eventra.presentation.component.AppButton
 import com.example.eventra.presentation.component.AppTextField
+import com.example.eventra.presentation.navigation.Screen
 import com.example.eventra.ui.theme.mainColor
-import java.nio.file.WatchEvent
 
 @Composable
-fun SignInScreen(navController: NavController) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var rememberMe by remember { mutableStateOf(false) }
+fun SignInScreen(navController: NavController,
+                 viewModel: SignInViewModel = viewModel()
+                 ) {
+    val email = viewModel.email
+    val password = viewModel.password
+    val rememberMe = viewModel.rememberMe
 
     AuthLayout(
         showBackButton = true,
@@ -48,17 +50,15 @@ fun SignInScreen(navController: NavController) {
 
                 AppTextField(
                     value = email,
-                    onValueChange = {email=it},
+                    onValueChange = {viewModel.onEmailChange(it)},
                     placeholder = "Email",
-                    isPassword = false
                 )
 
                 Spacer(modifier = Modifier.height(15.dp))
                 AppTextField(
                     value = password,
-                    onValueChange = {password=it},
+                    onValueChange = {viewModel.onPasswordChange(it)},
                     placeholder = "Password",
-                    isPassword = false
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 Row(modifier = Modifier.fillMaxWidth().padding(end = 15.dp),
@@ -70,7 +70,7 @@ fun SignInScreen(navController: NavController) {
                         verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
                             checked = rememberMe,
-                            onCheckedChange = {rememberMe=it}
+                            onCheckedChange = {viewModel.onRememberMeChange(it)}
                         )
                         Text(text = "Remember me", fontSize = 10.sp)
 
@@ -88,7 +88,9 @@ fun SignInScreen(navController: NavController) {
 
                 AppButton(
                     text = "SIGN IN",
-                    onClick = {},
+                    onClick = {
+                        navController.navigate(Screen.Home.route)
+                    },
                     modifier = Modifier.width(276.dp)
                         .height(64.dp)
                 )

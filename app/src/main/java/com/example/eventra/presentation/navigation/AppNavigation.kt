@@ -10,6 +10,10 @@ import com.example.eventra.presentation.Onboarding.OnboardingAuthScreen
 import com.example.eventra.presentation.Onboarding.OnboardingScreenViewmodel
 import com.example.eventra.presentation.AuthScreens.SignInScreen
 import com.example.eventra.presentation.AuthScreens.SignUpScreen
+import com.example.eventra.presentation.HomeScreen.AddEvent
+import com.example.eventra.presentation.HomeScreen.Home
+import com.example.eventra.presentation.HomeScreen.TodayEventDetailScreen
+import com.example.eventra.presentation.HomeScreen.UpcomingEventDetailScreen
 import com.example.eventra.presentation.SplashScreen
 
 @Composable
@@ -51,6 +55,20 @@ fun AppNavigation() {
         composable(Screen.SignUpScreen.route){
             SignUpScreen(navController)
         }
+        composable(Screen.Home.route){
+            Home(navController)
+        }
+        composable(Screen.AddEvent.route){
+            AddEvent(navController)
+        }
+        composable(Screen.TodaysEventDetailScreen.route){
+            TodayEventDetailScreen(navController)
+        }
+        composable(Screen.UpcomingEventDetailScreen.route){
+            UpcomingEventDetailScreen(navController)
+        }
+
+
     }
 
 }

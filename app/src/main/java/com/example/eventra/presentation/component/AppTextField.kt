@@ -1,22 +1,16 @@
 package com.example.eventra.presentation.component
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,9 +32,12 @@ fun AppTextField(
     onValueChange: (String) -> Unit,
     placeholder: String,
     isPassword: Boolean = false,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    maxLines:Int=5
 
 
-    )
+
+)
 {
     var passwordVisible by remember { mutableStateOf(false) }
 
@@ -48,6 +45,7 @@ fun AppTextField(
         value = value,
         onValueChange = onValueChange,
         minLines = 1,
+        maxLines = maxLines,
         label = {
             Text(text = placeholder)
         },
@@ -58,7 +56,6 @@ fun AppTextField(
                 fontSize = 16.sp
             )
         }*/
-        singleLine = true,
         visualTransformation =
             if (isPassword && !passwordVisible)
                 PasswordVisualTransformation()
@@ -66,17 +63,26 @@ fun AppTextField(
                 VisualTransformation.None,
 
         trailingIcon = {
-            if (isPassword) {
-                IconButton(
-                    onClick = { passwordVisible = !passwordVisible },
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        imageVector =
-                            if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                        contentDescription = null,
-                        tint = Color.Gray
-                    )
+            when {
+                isPassword -> {
+                    IconButton(
+                        onClick = { passwordVisible = !passwordVisible },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector =
+                                if (passwordVisible)
+                                    Icons.Default.Visibility
+                                else
+                                    Icons.Default.VisibilityOff,
+                            contentDescription = null,
+                            tint = Color.Gray
+                        )
+                    }
+                }
+
+                trailingIcon != null -> {
+                    trailingIcon()   // 🔥 THIS WAS MISSING
                 }
             }
         },
@@ -117,13 +123,13 @@ fun Preview(){
         AppTextField(
             value = email,
             onValueChange = { email = it },
-            placeholder = "Email"
+            placeholder = "Email",
         )
 
         AppTextField(
             value = password,
             onValueChange = { password = it },
-            placeholder = "Password"
+            placeholder = "Password",
         )
     }
 
