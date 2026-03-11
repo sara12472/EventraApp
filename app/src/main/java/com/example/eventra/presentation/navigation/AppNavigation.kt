@@ -14,6 +14,7 @@ import com.example.eventra.presentation.HomeScreen.AddEvent
 import com.example.eventra.presentation.HomeScreen.Home
 import com.example.eventra.presentation.HomeScreen.TodayEventDetailScreen
 import com.example.eventra.presentation.HomeScreen.UpcomingEventDetailScreen
+import com.example.eventra.presentation.SettingScreen.SettingScreen
 import com.example.eventra.presentation.SplashScreen
 
 @Composable
@@ -66,6 +67,9 @@ fun AppNavigation() {
         }
         composable(Screen.UpcomingEventDetailScreen.route){
             UpcomingEventDetailScreen(navController)
+        }
+        composable(Screen.SettingScreen.route){
+           SettingScreen()
         }
 
 

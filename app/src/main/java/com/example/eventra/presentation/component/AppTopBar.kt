@@ -41,7 +41,7 @@ fun AppTopBar(
         }
         Spacer(modifier = Modifier.width(20.dp))
 
-        Text(text=text, fontSize = 15.sp,
+        Text(text=text, fontSize = 16.sp,
             fontFamily = myFont,
             color = color
             )

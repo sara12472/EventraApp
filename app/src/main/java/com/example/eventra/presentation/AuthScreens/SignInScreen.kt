@@ -1,6 +1,9 @@
 package com.example.eventra.presentation.AuthScreens
 
 import AuthLayout
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,6 +33,12 @@ import com.example.eventra.presentation.component.AppButton
 import com.example.eventra.presentation.component.AppTextField
 import com.example.eventra.presentation.navigation.Screen
 import com.example.eventra.ui.theme.mainColor
+import com.example.eventra.R
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import kotlin.jvm.java
+
 
 @Composable
 fun SignInScreen(navController: NavController,
@@ -37,6 +47,35 @@ fun SignInScreen(navController: NavController,
     val email = viewModel.email
     val password = viewModel.password
     val rememberMe = viewModel.rememberMe
+
+    val context = LocalContext.current
+
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(context.getString(R.string.default_web_client_id))
+        .requestEmail()
+        .build()
+
+    val googleSignInClient = GoogleSignIn.getClient(context, gso)
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            account?.idToken?.let { idToken ->
+                viewModel.firebaseAuthWithGoogle(idToken) { success, message ->
+                    if(success) {
+                        navController.navigate(Screen.Home.route)
+                    } else {
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        } catch (e: ApiException) {
+            Toast.makeText(context, "Google Sign-In Failed: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     AuthLayout(
         showBackButton = true,
@@ -89,7 +128,11 @@ fun SignInScreen(navController: NavController,
                 AppButton(
                     text = "SIGN IN",
                     onClick = {
-                        navController.navigate(Screen.Home.route)
+                        viewModel.signIn { success, message ->
+                            if(success){
+                                navController.navigate(Screen.Home.route)
+                            }
+                        }
                     },
                     modifier = Modifier.width(276.dp)
                         .height(64.dp)
@@ -99,7 +142,27 @@ fun SignInScreen(navController: NavController,
                 AuthBottomSection(
                     bottomText = "Don't have an account?",
                     clickableText = "Sign up",
-                    onClick = {}
+                    icons = listOf(
+                        R.drawable.google,
+                        R.drawable.facebook,
+                        R.drawable.apple
+                    ),
+                    onIconClick = { icon ->
+                        when(icon){
+                            R.drawable.google -> {
+                                val signInIntent = googleSignInClient.signInIntent
+                                launcher.launch(signInIntent)
+
+
+                            }
+                            R.drawable.facebook -> {
+                                // Facebook login
+                            }
+                        }
+                    },
+                    onClick = {
+                        navController.navigate(Screen.SignUpScreen.route)
+                    }
                 )
 
 

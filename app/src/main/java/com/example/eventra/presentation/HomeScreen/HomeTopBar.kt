@@ -1,7 +1,9 @@
 package com.example.eventra.presentation.HomeScreen
 
+import android.graphics.drawable.Icon
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,7 +36,12 @@ import com.example.eventra.ui.theme.AppGradient
 import java.nio.file.WatchEvent
 
 @Composable
-fun HomeTopBar() {
+fun HomeTopBar(
+    welcomeText:String,
+    EventraText: String,
+    icon: ImageVector,
+    onClick :() -> Unit={}
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -52,21 +60,22 @@ fun HomeTopBar() {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
-                    text = "Welcome To",
+                    text = welcomeText,
                     color = Color.White.copy(alpha = 0.7f)
                 )
 
-                IconButton(onClick = {}) {
+                IconButton(onClick = {onClick()}) {
                     Icon(
-                            imageVector = Icons.Default.Settings,
+                            imageVector = icon,
                             contentDescription = null,
-                            tint = Color.White
+                            tint = Color.White,
+
                         )
 
                 }
             }
             Text(
-                text = "EVENTRA",
+                text = EventraText,
                 color = Color.White,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
@@ -79,5 +88,9 @@ fun HomeTopBar() {
 @Preview
 @Composable
 fun ShowHomeTop(){
-    HomeTopBar()
+    HomeTopBar(
+        welcomeText = "Welcome to",
+        EventraText = "EVENTRA",
+        icon = Icons.Default.Settings
+    )
 }

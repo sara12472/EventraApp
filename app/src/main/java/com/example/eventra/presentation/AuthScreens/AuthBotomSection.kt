@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -30,7 +31,9 @@ import com.example.eventra.R
 fun AuthBottomSection(
     bottomText: String,
     clickableText: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    icons: List<Int>,   // icons parameter
+    onIconClick: (Int) -> Unit = {},
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -56,24 +59,18 @@ fun AuthBottomSection(
             horizontalArrangement = Arrangement.spacedBy(24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.google),
-                contentDescription = "Google",
-                modifier = Modifier.size(40.dp),
-                tint = Color.Unspecified
-            )
-            Icon(
-                painter = painterResource(id = R.drawable.facebook),
-                contentDescription = "Facebook",
-                modifier = Modifier.size(40.dp),
-                tint = Color.Unspecified
-            )
-            Icon(
-                painter = painterResource(id = R.drawable.apple),
-                contentDescription = "Apple",
-                modifier = Modifier.size(40.dp),
-                tint = Color.Unspecified
-            )
+            icons.forEach { icon ->
+
+                Icon(
+                    painter = painterResource(id = icon),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clickable { onIconClick(icon) },
+                    tint = Color.Unspecified
+                )
+
+            }
         }
 
         Spacer(modifier = Modifier.height(40.dp))
@@ -101,6 +98,10 @@ fun Preview() {
         bottomText = "Don't have an account",
         clickableText = "sign up",
         onClick = {},
-
+        icons =  listOf(
+            R.drawable.google,
+            R.drawable.facebook,
+            R.drawable.apple
+        )
         )
 }

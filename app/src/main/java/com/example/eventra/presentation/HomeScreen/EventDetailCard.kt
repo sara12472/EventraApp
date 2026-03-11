@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,13 +42,12 @@ fun EventDetailCard(
     title: String,
     date:String,
     time:String,
+    icon: List<ImageVector>,
     location: String,
-    repeat: String,
-    reminder: String,
+   // repeat: String,
+    //reminder: String,
     detail: String,
-    onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit,
-    onShareClick: () -> Unit,
+    onIconClick: (ImageVector) -> Unit = {},
     modifier: Modifier = Modifier,
     backgroundColor: Color? = null,
     backgroundBrush: Brush? = null
@@ -84,10 +84,10 @@ fun EventDetailCard(
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "Location: $location", color = Color.White)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Repeat: $repeat", color = Color.White)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Reminder: $reminder", color = Color.White)
-            Spacer(modifier = Modifier.height(8.dp))
+           // Text(text = "Repeat: $repeat", color = Color.White)
+            //Spacer(modifier = Modifier.height(8.dp))
+            //Text(text = "Reminder: $reminder", color = Color.White)
+            //Spacer(modifier = Modifier.height(8.dp))
             Text(text = "Detail: $detail", color = Color.White)
             Spacer(modifier = Modifier.height(30.dp))
 
@@ -98,24 +98,18 @@ fun EventDetailCard(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
 
                     ){
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit",
-                        tint = if (backgroundBrush != null) Color.White else mainColor,
-                        modifier = Modifier.size(20.dp).clickable{onEditClick},
-                    )
-                    Icon(
-                        imageVector = Icons.Default.Share,
-                        contentDescription = "Delete",
-                        tint = if (backgroundBrush != null) Color.White else mainColor,
-                        modifier = Modifier.size(20.dp).clickable{onDeleteClick}
-                    )
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Share",
-                        tint = if (backgroundBrush != null) Color.White else mainColor,
-                        modifier = Modifier.size(20.dp).clickable{onShareClick}
-                    )
+                    icon.forEach { iconVector ->
+
+                        Icon(
+                           imageVector = iconVector,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clickable { onIconClick(iconVector) },
+                            tint = Color.White
+                        )
+
+                    }
                 }
             }
 
@@ -132,13 +126,15 @@ fun ShowCardDetail(){
         location = "Zoom",
         date="4/5/6",
         time = "890",
-        repeat = "Weekly",
-        reminder = "15 minutes before",
+      //  repeat = "Weekly",
+       // reminder = "15 minutes before",
         detail = "Live session covering Flutter layouts and state management basics.",
-        onEditClick = {},
-        onDeleteClick = {},
-        onShareClick = {},
-        backgroundBrush = AppGradient
+        backgroundBrush = AppGradient,
+        icon =  listOf(
+            Icons.Default.Edit,
+            Icons.Default.Share,
+            Icons.Default.Delete
+        )
     )
 
 }

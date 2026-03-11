@@ -1,5 +1,6 @@
 package com.example.eventra.presentation.HomeScreen
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -55,7 +56,9 @@ import androidx.compose.material3.TimePickerDialog
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import com.example.eventra.presentation.component.AppButton
+import com.example.eventra.presentation.navigation.Screen
 import java.nio.file.WatchEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,14 +75,20 @@ fun AddEvent(navController: NavController,
     val datePickerState = rememberDatePickerState()
     val timePickerState = rememberTimePickerState()
 
-
+    val context = LocalContext.current
 
     var showRepeatMenu by remember { mutableStateOf(false) }
     val repeatOptions = listOf("None", "Daily", "Weekly", "Monthly")
 
 
     var showReminderMenu by remember { mutableStateOf(false) }
-    val reminderOptions = listOf("ON", "OFF")
+    val reminderOptions = listOf("None",
+        "At time of event",
+        "5 minutes before",
+        "10 minutes before",
+        "30 minutes before",
+        "1 hour before",
+        "1 day before")
 
     Column(modifier = Modifier.fillMaxSize().
     verticalScroll(rememberScrollState())) {
@@ -211,7 +220,13 @@ fun AddEvent(navController: NavController,
 
                         AppButton(
                             text=if (isAddMode) "ADD EVENT" else "UPDATE EVENT",
-                            onClick = {},
+                            onClick = {viewModel.addEvent(context) { success ->   // ✅ pass context here
+                                if (success) {
+                                    Toast.makeText(context,"Event added successfully", Toast.LENGTH_SHORT).show()
+                                    navController.navigate(Screen.Home.route)
+                                }
+                            }
+                            },
                             modifier = Modifier.width(276.dp)
                                 .height(64.dp)
                         )
@@ -235,7 +250,7 @@ fun AddEvent(navController: NavController,
                     DropdownMenuItem(
                         text = { Text(option) },  // <-- fix here
                         onClick = {
-                            viewModel.onRepeatChange(option)
+                            viewModel.onReminderChange(option)
                             showReminderMenu = false
                         }
                     )

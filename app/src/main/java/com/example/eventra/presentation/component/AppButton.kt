@@ -27,7 +27,7 @@ import com.example.eventra.ui.theme.myFont
 @Composable
 fun AppButton(
     text: String,
-    onClick: () -> Unit,
+    onClick:  () -> Unit,
     modifier: Modifier= Modifier,
 ) {
    Button(
