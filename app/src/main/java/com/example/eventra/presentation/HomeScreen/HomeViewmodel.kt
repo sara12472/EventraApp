@@ -1,5 +1,6 @@
 package com.example.eventra.presentation.HomeScreen
 
+import android.R.attr.title
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -8,14 +9,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import androidx.lifecycle.viewModelScope
+import com.example.eventra.Models.Event
+import com.example.eventra.Models.EventRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 
-class HomeViewmodel : ViewModel() {
-    private val db = FirebaseFirestore.getInstance()
+
+@HiltViewModel
+class HomeViewmodel @Inject constructor (private val repository: EventRepository) : ViewModel() {
+    //private val db = FirebaseFirestore.getInstance()
 
     var selectedDate by mutableStateOf("SELECT DATE")
         private set
@@ -29,6 +36,8 @@ class HomeViewmodel : ViewModel() {
 
     var upcomingEvents by mutableStateOf<List<Event>>(emptyList())
         private set
+
+
     fun openDateDialog() {
         showDateDialog = true
     }
@@ -36,120 +45,100 @@ class HomeViewmodel : ViewModel() {
     fun closeDateDialog() {
         showDateDialog = false
     }
+
     fun clearDate() {
         selectedDate = ""
-        selectedEvents=emptyList()
+        selectedEvents = emptyList()
     }
 
     fun setDate(date: String) {
         selectedDate = date
         fetchEventForDate(date)
     }
-    private fun fetchEventForDate(date: String) {
-        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
+    fun fetchEvents() {
+        viewModelScope.launch {
+            try {
+                val allEvents = repository.getEvents()
+                val today = Date()
+                val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                val todayStr = sdf.format(today)
+                val todayDayName = SimpleDateFormat("EEEE", Locale.getDefault()).format(today)
+                val todayDayNumber = SimpleDateFormat("dd", Locale.getDefault()).format(today)
 
-        db.collection("events")
-            .whereEqualTo("userId", currentUser.uid)
-            .get()
-            .addOnSuccessListener { documents ->
-                val events = documents.map { doc ->
-                    Event(
-                        title = doc.getString("title") ?: "",
-                        detail = doc.getString("detail") ?: "",
-                        date = doc.getString("date") ?: "",
-                        time = doc.getString("time") ?: "",
-                        location = doc.getString("location") ?: "",
-                        repeat = doc.getString("repeat") ?: "",
-                        reminder = doc.getString("reminder") ?: ""
-                    )
+                todayEvents = allEvents.filter { event ->
+                    val eventDate = sdf.parse(event.date) ?: today
+                    val eventDayName = SimpleDateFormat("EEEE", Locale.getDefault()).format(eventDate)
+                    val eventDayNumber = SimpleDateFormat("dd", Locale.getDefault()).format(eventDate)
+
+                    when (event.repeat) {
+                        "Daily" -> true
+                        "Weekly" -> eventDayName == todayDayName
+                        "Monthly" -> eventDayNumber == todayDayNumber
+                        else -> event.date == todayStr
+                    }
                 }
 
-                // filter selected events including repeats
-                selectedEvents = events.filter { event ->
-                    val eventDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(event.date)
-                    val selected = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(date)
+                upcomingEvents = allEvents.filter { event ->
+                    val eventDate = sdf.parse(event.date) ?: today
+                    when (event.repeat) {
+                        "Daily", "Weekly", "Monthly" -> eventDate.after(today)
+                        else -> eventDate.after(today)
+                    }
+                }
 
+            } catch (e: Exception) {
+                todayEvents = emptyList()
+                upcomingEvents = emptyList()
+            }
+        }
+    }
+
+    // 🔹 Fetch events for a specific date
+    private fun fetchEventForDate(date: String) {
+        viewModelScope.launch {
+            try {
+                val allEvents = repository.getEvents()
+                val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                val selected = sdf.parse(date)
+                val selectedDayName = SimpleDateFormat("EEEE", Locale.getDefault()).format(selected!!)
+                val selectedDayNumber = SimpleDateFormat("dd", Locale.getDefault()).format(selected)
+
+                selectedEvents = allEvents.filter { event ->
+                    val eventDate = sdf.parse(event.date)
                     val eventDayName = SimpleDateFormat("EEEE", Locale.getDefault()).format(eventDate!!)
-                    val selectedDayName = SimpleDateFormat("EEEE", Locale.getDefault()).format(selected!!)
-
                     val eventDayNumber = SimpleDateFormat("dd", Locale.getDefault()).format(eventDate)
-                    val selectedDayNumber = SimpleDateFormat("dd", Locale.getDefault()).format(selected)
 
-                    // include repeats
                     event.date == date ||
                             event.repeat == "Daily" ||
                             (event.repeat == "Weekly" && eventDayName == selectedDayName) ||
                             (event.repeat == "Monthly" && eventDayNumber == selectedDayNumber)
                 }
-            }
-            .addOnFailureListener {
+            } catch (e: Exception) {
                 selectedEvents = emptyList()
             }
+        }
     }
-    // Fetch today & upcoming events
-    fun fetchEvents() {
-        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
 
-        val today = Date()
-
-        val todayDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(today)
-        val todayDayName = SimpleDateFormat("EEEE", Locale.getDefault()).format(today)
-        val todayDayNumber = SimpleDateFormat("dd", Locale.getDefault()).format(today)
-
-        db.collection("events")
-            .whereEqualTo("userId", currentUser.uid)
-            .get()
-            .addOnSuccessListener { documents ->
-
-                val events = documents.map { doc ->
-                    Event(
-                        id = doc.id,
-                        title = doc.getString("title") ?: "",
-                        detail = doc.getString("detail") ?: "",
-                        date = doc.getString("date") ?: "",
-                        time = doc.getString("time") ?: "",
-                        location = doc.getString("location") ?: "",
-                        repeat = doc.getString("repeat") ?: "",
-                        reminder = doc.getString("reminder") ?: ""
-                    )
-                }
-
-                todayEvents = events.filter { event ->
-
-                    val eventDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                        .parse(event.date)
-
-                    val eventDayName =
-                        SimpleDateFormat("EEEE", Locale.getDefault()).format(eventDate!!)
-
-                    val eventDayNumber =
-                        SimpleDateFormat("dd", Locale.getDefault()).format(eventDate)
-
-                    event.date == todayDate ||
-                            event.repeat == "Daily" ||
-                            (event.repeat == "Weekly" && eventDayName == todayDayName) ||
-                            (event.repeat == "Monthly" && eventDayNumber == todayDayNumber)
-                }
-
-                upcomingEvents = events.filter { event ->
-
-                    val eventDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                        .parse(event.date)
-
-                    val eventDayName =
-                        SimpleDateFormat("EEEE", Locale.getDefault()).format(eventDate!!)
-
-                    val eventDayNumber =
-                        SimpleDateFormat("dd", Locale.getDefault()).format(eventDate)
-
-                    !(event.date == todayDate ||
-                            event.repeat == "Daily" ||
-                            (event.repeat == "Weekly" && eventDayName == todayDayName) ||
-                            (event.repeat == "Monthly" && eventDayNumber == todayDayNumber))
-                }
+    // 🔹 Delete event
+    fun deleteEvent(event: Event, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                repository.deleteEvent(event)
+                fetchEvents() // refresh
+                onResult(true)
+            } catch (e: Exception) {
+                onResult(false)
             }
+        }
+    }
+
+    // 🔹 Schedule reminder
+
+    fun resetDate(){
+        selectedDate = "SELECT DATE"
+        selectedEvents = emptyList()
     }
 
 
-    }
+}
     

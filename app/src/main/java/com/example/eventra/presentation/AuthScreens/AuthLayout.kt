@@ -14,6 +14,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import com.example.eventra.R
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -77,7 +78,7 @@ fun AuthLayout(
                 .fillMaxHeight(0.75f)
                 .align(Alignment.BottomCenter),
             shape = RoundedCornerShape(topStart = 65.dp, topEnd = 65.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             content()
         }

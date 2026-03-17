@@ -30,14 +30,16 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.eventra.R
+import com.example.eventra.presentation.navigation.Screen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 
 @Composable
-fun SplashScreen(onFinish: () -> Unit) {
+fun SplashScreen( navController: NavController) {
     val scale = remember { Animatable(0.6f) }
     val alpha = remember { Animatable(0f) }
 
@@ -53,7 +55,18 @@ fun SplashScreen(onFinish: () -> Unit) {
             animationSpec = tween(durationMillis = 800)
         )
         delay(1500)   // thoda rukne do
-        onFinish()
+        val sharedPref = navController.context.getSharedPreferences("myAppPrefs", android.content.Context.MODE_PRIVATE)
+        val isFirstTime = sharedPref.getBoolean("isFirstTimeUser", true)
+
+        if (isFirstTime) {
+            navController.navigate(Screen.OnBoardingScreen.route) {
+                popUpTo(Screen.Splash.route) { inclusive = true }
+            }
+        } else {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.Splash.route) { inclusive = true }
+            }
+        }
     }
 
 

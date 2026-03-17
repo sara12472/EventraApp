@@ -1,5 +1,6 @@
 package com.example.eventra.presentation.HomeScreen
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -53,28 +54,34 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.FontScalingLinear
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.eventra.data.EventRepositoryImpl
 import com.example.eventra.presentation.navigation.Screen
 import com.example.eventra.ui.theme.AppGradient
 import com.example.eventra.ui.theme.greyColor
 import com.example.eventra.ui.theme.mainColor
 import com.example.eventra.ui.theme.myFont
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun Home(navController: NavController, viewModel: HomeViewmodel = viewModel(),
-         addEventViewmodel: AddEventViewmodel=viewModel()
-         ) {
-    val selectedDate = viewModel.selectedDate
-    val selectedEvents = viewModel.selectedEvents
+fun Home(navController: NavController,
+         viewmodel: HomeViewmodel=hiltViewModel(),
+         addEventViewmodel: AddEventViewmodel = hiltViewModel()) {
+
+    val selectedDate = viewmodel.selectedDate
+    val selectedEvents = viewmodel.selectedEvents
     val context=LocalContext.current
     LaunchedEffect(Unit) {
-        viewModel.fetchEvents()
+        viewmodel.fetchEvents()
     }
 
     Scaffold(
@@ -88,7 +95,7 @@ fun Home(navController: NavController, viewModel: HomeViewmodel = viewModel(),
                 contentAlignment = Alignment.Center
             ) {
                 FloatingActionButton(
-                    onClick = { navController.navigate(Screen.AddEvent.route)},
+                    onClick = { navController.navigate(Screen.AddEvent.withArgs("new"))},
                     containerColor = Color.Transparent, // make FAB transparent so gradient shows
                     contentColor = Color.White,
                     elevation = FloatingActionButtonDefaults.elevation(0.dp),
@@ -135,7 +142,15 @@ fun Home(navController: NavController, viewModel: HomeViewmodel = viewModel(),
                         DatePickerButton(
                             onDateSelected = {},
                             onDismiss = {},
-                            viewModel = viewModel
+                            viewModel = viewmodel,
+                            onClick = {
+                                if(viewmodel.selectedDate != "SELECT DATE"){
+                                    viewmodel.resetDate()
+                                } else {
+                                    viewmodel.openDateDialog()
+                                }
+
+                            }
                         )
                     }
                 }
@@ -151,7 +166,7 @@ fun Home(navController: NavController, viewModel: HomeViewmodel = viewModel(),
                         .padding(horizontal = 16.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    if (selectedDate != "SELECT DATE") {
+                   if (selectedDate != "SELECT DATE") {
                         // Date is selected
                         if (selectedEvents.isNotEmpty()) {
                             // Show all events for that date
@@ -172,19 +187,47 @@ fun Home(navController: NavController, viewModel: HomeViewmodel = viewModel(),
                                     onIconClick = { icon ->
                                         when(icon){
                                             Icons.Default.Edit-> {
-                                                addEventViewmodel.updateEvent(context, event.id) { success ->
-                                                    if (success) {
-                                                        Toast.makeText(context, "Event updated successfully", Toast.LENGTH_SHORT).show()
-                                                        navController.navigate(Screen.Home.route)
-                                                    }
-                                                }
 
+                                                if(event.id.isNotEmpty()){
+                                                    addEventViewmodel.fetchEventById(event.id)
+                                                    navController.navigate("add_event/${event.id}")
+                                                }
                                             }
                                             Icons.Default.Share -> {
-                                                // Facebook login
+                                                val shareText = """
+                                Event: ${event.title}
+                                Date: ${event.date}
+                                Time: ${event.time}
+                                Location: ${event.location}
+
+                               ${event.detail}
+                               """.trimIndent()
+                                                val intent = Intent(Intent.ACTION_SEND).apply {
+                                                    type = "text/plain"
+                                                    putExtra(Intent.EXTRA_TEXT, shareText)
+                                                }
+
+                                                context.startActivity(
+                                                    Intent.createChooser(intent,"Share Event")
+                                                )
                                             }
                                             Icons.Default.Delete -> {
-                                                // Facebook login
+                                                if(event.id.isNotEmpty()){
+
+                                                    addEventViewmodel.deleteEvent(event){ success ->
+
+                                                        if(success){
+                                                            Toast.makeText(context,"Event Deleted",Toast.LENGTH_SHORT).show()
+                                                            viewmodel.fetchEvents()
+                                                        } else {
+                                                            Toast.makeText(context,"Delete failed",Toast.LENGTH_SHORT).show()
+                                                        }
+
+                                                    }
+
+                                                } else {
+                                                    Toast.makeText(context,"Invalid event id",Toast.LENGTH_SHORT).show()
+                                                }
                                             }
                                         }
                                     },
@@ -211,9 +254,13 @@ fun Home(navController: NavController, viewModel: HomeViewmodel = viewModel(),
                         // No date selected → show Today/Upcoming
                         EventsCard(
                             title = "Today's Events",
-                            items = viewModel.todayEvents.map { it.title },
+                            items = viewmodel.todayEvents.map { it.title },
                             backgroundBrush = AppGradient,
-                            onClick = { navController.navigate(Screen.TodaysEventDetailScreen.route) },
+                            onClick = { navController.navigate(Screen.TodaysEventDetailScreen.route){
+                                launchSingleTop = true
+                            }
+
+                            },
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -221,9 +268,11 @@ fun Home(navController: NavController, viewModel: HomeViewmodel = viewModel(),
 
                         EventsCard(
                             title = "Upcoming Events",
-                            items = viewModel.upcomingEvents.map { it.title },
+                            items = viewmodel.upcomingEvents.map { it.title },
                             backgroundColor = greyColor,
-                            onClick = { navController.navigate(Screen.UpcomingEventDetailScreen.route) },
+                            onClick = { navController.navigate(Screen.UpcomingEventDetailScreen.route){
+                                launchSingleTop = true
+                            } },
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
@@ -267,9 +316,10 @@ fun Home(navController: NavController, viewModel: HomeViewmodel = viewModel(),
 
 @Composable
 fun DatePickerButton(
-    viewModel: HomeViewmodel= viewModel(),
+    viewModel: HomeViewmodel,
     onDateSelected: (Long?) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onClick:()->Unit
 ) {
 
     val datePickerState = rememberDatePickerState()
@@ -279,7 +329,7 @@ fun DatePickerButton(
         colors =ButtonDefaults.buttonColors(containerColor = greyColor), // transparent
         modifier = Modifier.width(303.dp).height(68.dp),
         onClick = {
-           viewModel.openDateDialog()
+           onClick()
         }
     ) {
         Row(
@@ -335,20 +385,6 @@ fun DatePickerButton(
 
 
 
-@Preview
-@Composable
-fun Preview(){
-    DatePickerButton(
-        onDateSelected = {},
-        onDismiss = {}
-    )
-}
-
-@Preview
-@Composable
-fun showHome(){
-
-}
 
 /*DatePickerDialog(
 onDismissRequest ={},

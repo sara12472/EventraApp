@@ -6,16 +6,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.firestore.FirebaseFirestore
+import androidx.lifecycle.viewModelScope
+import com.example.eventra.Models.AuthRepository.AuthRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
-class SignUpScreenViewModel: ViewModel() {
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
-
-
+@HiltViewModel
+class SignUpScreenViewModel @Inject constructor(private val repository: AuthRepository): ViewModel() {
 
     var name by mutableStateOf("")
         private set
@@ -67,104 +66,75 @@ class SignUpScreenViewModel: ViewModel() {
         rememberMe = value
     }
 
-    fun signUp(onResult:(Boolean,String)->Unit){
+    fun signUp(onResult: (Boolean, String) -> Unit) {
+
         var hasError = false
 
-        // Name
         if (name.isEmpty()) {
             nameError = true
             hasError = true
         }
 
-        // Email
         if (email.isEmpty()) {
             emailError = "* Required"
             hasError = true
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             emailError = "Invalid email format"
             hasError = true
-        } else {
-            emailError = ""
         }
 
-        // Password
         if (password.isEmpty()) {
             passwordError = true
             hasError = true
         }
 
-        // Confirm Password
-        if (confirmPassword.isEmpty()) {
-            confirmPasswordError = "* Required"
-            hasError = true
-        } else if (password != confirmPassword) {
+        if (confirmPassword != password) {
             confirmPasswordError = "Passwords do not match"
             hasError = true
-        } else {
-            confirmPasswordError = ""
         }
 
-        // Agar koi error hai to signup stop
         if (hasError) return
 
-        nameError = false
-        emailError = ""
-        passwordError = false
-        confirmPasswordError = ""
+        viewModelScope.launch {
 
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val userId = auth.currentUser?.uid
-                    if (userId != null) {
-                        // Save user info in 'users' collection
-                        val user = hashMapOf(
-                            "name" to name,
-                            "email" to email,
-                            "createdAt" to System.currentTimeMillis()
-                        )
-                        db.collection("users").document(userId)
-                            .set(user)
-                            .addOnSuccessListener {
-                                signupMessage = "User added successfully!"
-                                signupSuccess = true
-                                onResult(true, signupMessage)
-                            }
-                            .addOnFailureListener { e ->
-                                signupMessage = "Firestore error: ${e.message}"
-                                signupSuccess = false
-                                onResult(false, signupMessage)
-                            }
-                    } else {
-                        signupMessage = "Error: UID is null"
-                        signupSuccess = false
-                        onResult(false, signupMessage)
-                    }
-                } else {
-                    signupMessage = task.exception?.message ?: "Signup failed"
-                    signupSuccess = false
-                    onResult(false, signupMessage)
-                }
+            val result = repository.signUp(
+                name = name,
+                email = email,
+                password = password
+            )
+
+            if (result.isSuccess) {
+                signupSuccess = true
+                signupMessage = "Signup successful"
+                onResult(true, signupMessage)
+            } else {
+                signupSuccess = false
+                signupMessage =
+                    result.exceptionOrNull()?.message ?: "Signup failed"
+                onResult(false, signupMessage)
             }
+
+        }
+    }
+    fun signInWithGoogle(idToken: String, onResult: (Boolean, String) -> Unit) {
+
+        viewModelScope.launch {
+
+            val result = repository.signInWithGoogle(idToken)
+
+            if (result.isSuccess) {
+                loginSuccess = true
+                loginMessage = "Google Login Successful"
+                onResult(true, loginMessage)
+            } else {
+                loginSuccess = false
+                loginMessage =
+                    result.exceptionOrNull()?.message ?: "Google login failed"
+                onResult(false, loginMessage)
+            }
+
+        }
     }
 
-    fun firebaseAuthWithGoogle(idToken: String, onResult: (Boolean, String) -> Unit) {
 
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener { task ->
-
-                if (task.isSuccessful) {
-                    loginMessage = "Google Login Successful"
-                    loginSuccess = true
-                    onResult(true, loginMessage)
-                } else {
-                    loginMessage = task.exception?.message ?: "Google login failed"
-                    loginSuccess = false
-                    onResult(false, loginMessage)
-                }
-
-            }
-    }
 }

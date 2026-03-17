@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -38,29 +39,20 @@ import com.google.android.gms.common.api.ApiException
 import kotlinx.serialization.descriptors.PrimitiveKind
 
 @Composable
-fun SignUpScreen(navController: NavController, viewModel: SignUpScreenViewModel= viewModel()) {
+fun SignUpScreen(navController: NavController, ) {
+    val context = LocalContext.current
+    val viewModel: SignUpScreenViewModel = hiltViewModel()
 
    val name = viewModel.name
     val email = viewModel.email
     val password = viewModel.password
     val confirmPassword = viewModel.confirmPassword
     val rememberMe = viewModel.rememberMe
-    val context = LocalContext.current
+
 
     val message = viewModel.signupMessage
     val success = viewModel.signupSuccess
 
-    LaunchedEffect(message) {
-        if (message.isNotEmpty()) {
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    LaunchedEffect(success) {
-        if (success) {
-            navController.navigate(Screen.SignInScreen.route)
-        }
-    }
 
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
         .requestIdToken(context.getString(R.string.default_web_client_id))
@@ -76,7 +68,7 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpScreenViewModel=
         try {
             val account = task.getResult(ApiException::class.java)
             account?.idToken?.let { idToken ->
-                viewModel.firebaseAuthWithGoogle(idToken) { success, message ->
+                viewModel.signInWithGoogle(idToken) { success, message ->
                     if(success) {
                         navController.navigate(Screen.Home.route)
                     } else {
@@ -153,10 +145,10 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpScreenViewModel=
                 AppButton(
                     text = "SIGN UP",
                     onClick = {
-                        viewModel.signUp { _, _ -> }
-
-
-
+                        viewModel.signUp { success, message ->
+                            if (success) navController.navigate(Screen.SignInScreen.route)
+                            else Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        }
                     },
                     modifier = Modifier.width(276.dp)
                         .height(64.dp)

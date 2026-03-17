@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -53,15 +54,18 @@ fun EventDetailCard(
     backgroundBrush: Brush? = null
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        modifier = Modifier.fillMaxSize(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
     ) {
         Text(
             title,
-            color = mainColor
+            color = mainColor,
+            maxLines = 2
         )
+        Spacer(modifier = Modifier.width(8.dp))
 
-        Column {
+        Column( horizontalAlignment = Alignment.End) {
             Text(date, color = mainColor, fontFamily = myFont, fontSize = 15.sp)
             Text(time, color = mainColor, fontFamily = myFont, fontSize = 15.sp)
         }

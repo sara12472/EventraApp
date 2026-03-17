@@ -1,5 +1,7 @@
 package com.example.eventra.presentation.HomeScreen
 
+import android.R.attr.action
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -55,25 +57,37 @@ import java.util.Locale
 import androidx.compose.material3.TimePickerDialog
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.eventra.presentation.component.AppButton
 import com.example.eventra.presentation.navigation.Screen
+import com.example.eventra.ui.theme.ThemeSettings
 import java.nio.file.WatchEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEvent(navController: NavController,
-             viewModel: AddEventViewmodel = androidx.lifecycle.viewmodel.compose.viewModel()
+             viewModel: AddEventViewmodel = hiltViewModel(),
+             eventId: String? = null,
              ) {
+    LaunchedEffect(eventId) {
+        if (eventId != null && eventId != "new") {
+            viewModel.fetchEventById(eventId)
+        }
+    }
     val state = viewModel.uiState
-    val isAddMode = viewModel.mode == EventMode.Add
-
+    val bgColor = if (ThemeSettings.isDarkTheme) Color.Black else Color.White
+    //val isAddMode = viewModel.mode == EventMode.Add
+    val isAddMode = eventId == null || eventId == "new"    //val isAddMode = viewModel.mode == EventMode.Add
     var showDateDialog by remember { mutableStateOf(false) }
     var showTimeDialog by remember { mutableStateOf(false) }
 
     val datePickerState = rememberDatePickerState()
-    val timePickerState = rememberTimePickerState()
+    val timePickerState = rememberTimePickerState(
+        is24Hour = true // ✅ YAHAN LAGTA HAI
+    )
 
     val context = LocalContext.current
 
@@ -90,7 +104,15 @@ fun AddEvent(navController: NavController,
         "1 hour before",
         "1 day before")
 
-    Column(modifier = Modifier.fillMaxSize().
+    /*LaunchedEffect(eventId) {
+        if (eventId != null && eventId != "new" ) {
+            viewModel.mode = EventMode.Update
+            viewModel.eventId = eventId
+            viewModel.fetchEventById(eventId) // naya function
+        }
+    }*/
+
+    Column(modifier = Modifier.fillMaxSize().background(bgColor).
     verticalScroll(rememberScrollState())) {
 
         // Top bar
@@ -131,7 +153,7 @@ fun AddEvent(navController: NavController,
 
                         // Event title
                         AppTextField(
-                            value = state.eventTitle,
+                            value = state.eventTitle ?:"",
                             onValueChange = { viewModel.onTitleChange(it)},
                             placeholder = "Event Title"
                         )
@@ -220,12 +242,39 @@ fun AddEvent(navController: NavController,
 
                         AppButton(
                             text=if (isAddMode) "ADD EVENT" else "UPDATE EVENT",
-                            onClick = {viewModel.addEvent(context) { success ->   // ✅ pass context here
+                            onClick = {
+                                Log.d("REMINDER_DEBUG", "Button clicked")
+                                val action: (Boolean) -> Unit = { success ->
+
                                 if (success) {
-                                    Toast.makeText(context,"Event added successfully", Toast.LENGTH_SHORT).show()
-                                    navController.navigate(Screen.Home.route)
+
+                                    Toast.makeText(
+                                        context,
+                                        if (isAddMode) "Event added" else "Event updated",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+
+                                    navController.popBackStack()
+
+                                } else {
+
+                                    Toast.makeText(
+                                        context,
+                                        "Operation failed",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             }
+
+                                if (isAddMode) {
+
+                                    viewModel.addEvent(context, action)
+
+                                } else {
+
+                                    viewModel.updateEvent(context, action)
+
+                                }
                             },
                             modifier = Modifier.width(276.dp)
                                 .height(64.dp)
@@ -277,9 +326,9 @@ fun AddEvent(navController: NavController,
 
 
 
-        if (showTimeDialog) {
+
             if (showTimeDialog) {
-                val timePickerDialog = TimePickerDialog(
+               TimePickerDialog(
                     onDismissRequest = { showTimeDialog = false },
                     title = { Text("Select Time") },
                     confirmButton = {
@@ -302,12 +351,14 @@ fun AddEvent(navController: NavController,
                 ) {
                     TimePicker(
                         state = timePickerState,
+                       // ✅ MUST ADD
+
                         // optional parameters like is24Hour can go here
                         // is24Hour = true
                     )
                 }
             }
-        }
+
 
         // Date Picker Dialog
         if (showDateDialog) {
@@ -341,11 +392,4 @@ fun AddEvent(navController: NavController,
 }
 
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun ShowAddEvent(){
-     val navController= rememberNavController()
-    AddEvent(navController)
-
-}
 

@@ -22,11 +22,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.eventra.presentation.component.AppButton
@@ -34,48 +36,20 @@ import com.example.eventra.presentation.component.AppTextField
 import com.example.eventra.presentation.navigation.Screen
 import com.example.eventra.ui.theme.mainColor
 import com.example.eventra.R
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
-import kotlin.jvm.java
+
 
 
 @Composable
 fun SignInScreen(navController: NavController,
-                 viewModel: SignInViewModel = viewModel()
                  ) {
+    val context = LocalContext.current
+    val viewModel: SignInViewModel = hiltViewModel()
     val email = viewModel.email
     val password = viewModel.password
     val rememberMe = viewModel.rememberMe
+    val emailError = viewModel.emailError
+    val passwordError = viewModel.passwordError
 
-    val context = LocalContext.current
-
-    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestIdToken(context.getString(R.string.default_web_client_id))
-        .requestEmail()
-        .build()
-
-    val googleSignInClient = GoogleSignIn.getClient(context, gso)
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        try {
-            val account = task.getResult(ApiException::class.java)
-            account?.idToken?.let { idToken ->
-                viewModel.firebaseAuthWithGoogle(idToken) { success, message ->
-                    if(success) {
-                        navController.navigate(Screen.Home.route)
-                    } else {
-                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-        } catch (e: ApiException) {
-            Toast.makeText(context, "Google Sign-In Failed: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
 
     AuthLayout(
         showBackButton = true,
@@ -86,19 +60,28 @@ fun SignInScreen(navController: NavController,
                 //verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
-                AppTextField(
-                    value = email,
-                    onValueChange = {viewModel.onEmailChange(it)},
-                    placeholder = "Email",
-                )
-
+Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
+    AppTextField(
+        value = email,
+        onValueChange = {viewModel.onEmailChange(it)},
+        placeholder = "Email",
+    )
+    if (emailError.isNotEmpty()) {
+        ErrorMessageSignIn(emailError)
+    }
+}
                 Spacer(modifier = Modifier.height(15.dp))
-                AppTextField(
-                    value = password,
-                    onValueChange = {viewModel.onPasswordChange(it)},
-                    placeholder = "Password",
-                )
+                Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
+                    AppTextField(
+                        value = password,
+                        onValueChange = {viewModel.onPasswordChange(it)},
+                        placeholder = "Password",
+                    )
+                    if (passwordError.isNotEmpty()) {
+                   ErrorMessageSignIn(passwordError)
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(10.dp))
                 Row(modifier = Modifier.fillMaxWidth().padding(end = 15.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -119,7 +102,10 @@ fun SignInScreen(navController: NavController,
                         text = "Forgot Password?",
                         color = mainColor,
                         fontSize = 10.sp,
-                        modifier = Modifier.clickable { }
+                        modifier = Modifier.clickable {
+
+                                navController.navigate(Screen.ForgetPasswordScreen.route)                            }
+
                     )
                 }
 
@@ -150,8 +136,7 @@ fun SignInScreen(navController: NavController,
                     onIconClick = { icon ->
                         when(icon){
                             R.drawable.google -> {
-                                val signInIntent = googleSignInClient.signInIntent
-                                launcher.launch(signInIntent)
+
 
 
                             }
@@ -175,9 +160,18 @@ fun SignInScreen(navController: NavController,
     )
 }
 
+
 @Preview
 @Composable
 fun PreviewScreen(){
     val navController= rememberNavController()
     SignInScreen(navController)
+}
+@Composable
+fun ErrorMessageSignIn(
+    text: String=""
+){
+    Text(text, fontSize = 10.sp, color = Color.Red, modifier = Modifier.padding(top = 2.dp, start = 15.dp))
+
+
 }

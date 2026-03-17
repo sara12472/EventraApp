@@ -24,6 +24,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.eventra.ui.theme.ThemeSettings
 
 
 @Composable
@@ -47,15 +48,9 @@ fun AppTextField(
         minLines = 1,
         maxLines = maxLines,
         label = {
-            Text(text = placeholder)
+            Text(text = placeholder, color = if (ThemeSettings.isDarkTheme) Color.White else Color.Gray)
         },
-        /*placeholder = {
-            Text(
-                text = placeholder,
-                color = Color.Gray,
-                fontSize = 16.sp
-            )
-        }*/
+
         visualTransformation =
             if (isPassword && !passwordVisible)
                 PasswordVisualTransformation()

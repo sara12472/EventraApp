@@ -1,39 +1,43 @@
 package com.example.eventra.presentation.HomeScreen
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.eventra.Models.AddEventUIState
+import com.example.eventra.Models.Event
+import com.example.eventra.Models.EventMode
+import com.example.eventra.Models.EventRepository
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlin.contracts.contract
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import android.provider.Settings
+import java.util.Locale
+import javax.inject.Inject
 
 
-data class AddEventUIState(
-    val eventTitle: String = "",
-    val eventDetail: String = "",
-    val eventDate: String = "",
-    val eventTime: String = "",
-    val eventLocation: String = "",
-    var repeatEvent: String = "None",
-    var eventReminder: String = "OFF"
-)
-
-enum class EventMode{
-    Add,
-    Update
-}
 
 
-class AddEventViewmodel : ViewModel() {
-    private val db = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
+@HiltViewModel
+class AddEventViewmodel @Inject constructor(
+    private val repository: EventRepository
+) : ViewModel() {
+
+
+
+
     var mode by mutableStateOf(EventMode.Add)
+    var eventId by mutableStateOf("")
 
-
-    var  uiState by mutableStateOf(AddEventUIState())
+    var uiState by mutableStateOf(AddEventUIState())
 
     fun onTitleChange(value: String) {
         uiState = uiState.copy(eventTitle = value)
@@ -62,6 +66,7 @@ class AddEventViewmodel : ViewModel() {
     fun onReminderChange(value: String) {
         uiState = uiState.copy(eventReminder = value)
     }
+
     fun getReminderOffset(reminder: String): Long {
         return when (reminder) {
             "At time of event" -> 0L
@@ -81,114 +86,198 @@ class AddEventViewmodel : ViewModel() {
         eventDateTime: Long,
         reminderOffset: Long
     ) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12+
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) {
+                Log.d("REMINDER_DEBUG", "Exact alarms not allowed. Request user permission.")
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                context.startActivity(intent)
+                return
+            }
+        }
+
+
         val alarmTime = eventDateTime - reminderOffset
 
-        val intent = android.content.Intent(context, ReminderReceiver::class.java).apply {
+        Log.d("REMINDER_DEBUG", "EventTime=$eventDateTime")
+        Log.d("REMINDER_DEBUG", "AlarmTime=$alarmTime")
+        Log.d("REMINDER_DEBUG", "Now=${System.currentTimeMillis()}")
+
+        if (alarmTime <= System.currentTimeMillis()) {
+            Log.d("REMINDER_DEBUG", "Alarm skipped (past time)")
+            return
+        }
+
+        val intent = Intent(context, ReminderReceiver::class.java).apply {
             putExtra("title", title)
             putExtra("detail", detail)
         }
-
-        val pendingIntent = android.app.PendingIntent.getBroadcast(
+        val requestCode = (eventId.hashCode() and 0xFFFFFFF)
+        val pendingIntent = PendingIntent.getBroadcast(
             context,
-            title.hashCode(),
+            requestCode,
             intent,
-            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val alarmManager =
-            context.getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
 
-        alarmManager.setExact(android.app.AlarmManager.RTC_WAKEUP, alarmTime, pendingIntent)
-    }
-    // Functions to handle Add / Update logic
-    fun addEvent(context: Context,onResult: (Boolean) -> Unit,) {
-        val currentUser = auth.currentUser
-        if (currentUser == null) { onResult(false); return }
 
-        val event = hashMapOf(
-            "title" to uiState.eventTitle,
-            "detail" to uiState.eventDetail,
-            "date" to uiState.eventDate,
-            "time" to uiState.eventTime,
-            "location" to uiState.eventLocation,
-            "repeat" to uiState.repeatEvent,
-            "reminder" to uiState.eventReminder,
-            "userId" to currentUser.uid,
-            "createdAt" to System.currentTimeMillis()
-        )
 
-        // Save in top-level 'events' collection
-        db.collection("events")
-            .add(event)
-            .addOnSuccessListener {
-                val dateTimeString = "${uiState.eventDate} ${uiState.eventTime}"
-                val formatter = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault())
-                val eventDateTime = try {
-                    formatter.parse(dateTimeString)?.time
-                } catch (e: Exception) {
-                    null
-                }
-
-                if (eventDateTime != null && uiState.eventReminder != "None") {
-                    scheduleReminder(
-                        context = context,
-                        title = uiState.eventTitle,
-                        detail = uiState.eventDetail,
-                        eventDateTime = eventDateTime,
-                        reminderOffset = getReminderOffset(uiState.eventReminder)
-                    )
-                }
-                onResult(true) }
-            .addOnFailureListener { onResult(false) }
+        try {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                alarmTime,
+                pendingIntent
+            )
+            Log.d("REMINDER_DEBUG", "Exact alarm scheduled")
+        } catch (e: SecurityException) {
+            Log.e("REMINDER_DEBUG", "Failed to schedule exact alarm: ${e.message}")
+        }
     }
 
+    fun addEvent(context: Context, onResult: (Boolean) -> Unit) {
+        Log.d("REMINDER_DEBUG", "addEvent called")
 
-    fun updateEvent(context: Context,eventId: String, onResult: (Boolean) -> Unit) {
-        val currentUser = auth.currentUser
-        if (currentUser == null) { onResult(false); return }
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
-        val event = hashMapOf(
-            "title" to uiState.eventTitle,
-            "detail" to uiState.eventDetail,
-            "date" to uiState.eventDate,
-            "time" to uiState.eventTime,
-            "location" to uiState.eventLocation,
-            "repeat" to uiState.repeatEvent,
-            "reminder" to uiState.eventReminder,
-            "userId" to currentUser.uid
-        )
+        viewModelScope.launch {
+            try {
 
-        db.collection("events")
-            .document(eventId)
-            .set(event)
-            .addOnSuccessListener {
-                // Reminder logic
-                val dateTimeString = "${uiState.eventDate} ${uiState.eventTime}"
-                val formatter = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault())
-                val eventDateTime = try {
-                    formatter.parse(dateTimeString)?.time
-                } catch (e: Exception) {
-                    null
-                }
+                val event = Event(
+                  //  id = "",
+                    userId=userId,
+                    title = uiState.eventTitle,
+                    detail = uiState.eventDetail,
+                    date = uiState.eventDate,
+                    time = uiState.eventTime,
+                    location = uiState.eventLocation,
+                    repeat = uiState.repeatEvent,
+                    reminder = uiState.eventReminder
+                )
 
-                if (eventDateTime != null && uiState.eventReminder != "None") {
-                    scheduleReminder(
-                        context = context,
-                        title = uiState.eventTitle,
-                        detail = uiState.eventDetail,
-                        eventDateTime = eventDateTime,
-                        reminderOffset = getReminderOffset(uiState.eventReminder)
-                    )
-                }
+                repository.addEvent(event)
+
+                scheduleReminderIfNeeded(context)
 
                 onResult(true)
+
+            } catch (e: Exception) {
+                onResult(false)
             }
-            .addOnFailureListener { onResult(false) }
+        }
     }
 
-    // Optional: Load existing event for update
-    fun loadEvent(event: AddEventUIState) {
+    // UPDATE EVENT
+    fun updateEvent(context: Context, onResult: (Boolean) -> Unit) {
+        Log.d("REMINDER_DEBUG", "updateEvent called")
+
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
+        Log.d("EVENT_DEBUG","AddEvent clicked userId=$userId")
+
+        viewModelScope.launch {
+            try {
+
+                val event = Event(
+                    id = eventId,
+                    userId = userId,
+                    title = uiState.eventTitle,
+                    detail = uiState.eventDetail,
+                    date = uiState.eventDate,
+                    time = uiState.eventTime,
+                    location = uiState.eventLocation,
+                    repeat = uiState.repeatEvent,
+                    reminder = uiState.eventReminder
+                )
+
+                Log.d("EVENT_DEBUG","Event object = $event")
+
+                repository.updateEvent(event)
+
+                Log.d("EVENT_DEBUG","Event saved successfully")
+
+                scheduleReminderIfNeeded(context)
+
+                onResult(true)
+
+            } catch (e: Exception) {
+
+                Log.e("EVENT_DEBUG","Error saving event",e)
+
+                onResult(false)
+            }
+        }
+    }
+    private fun scheduleReminderIfNeeded(context: Context) {
+        Log.d("REMINDER_DEBUG", "scheduleReminderIfNeeded called")
+
+
+        val dateTimeString = "${uiState.eventDate} ${uiState.eventTime}"
+
+        val formatter =
+            SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+
+        val eventDateTime = try {
+            formatter.parse(dateTimeString)?.time
+        } catch (e: Exception) {
+            null
+        }
+        Log.d("REMINDER_DEBUG", "uiState.eventDate=${uiState.eventDate}, uiState.eventTime=${uiState.eventTime}")
+
+
+        if (eventDateTime != null ) {
+
+            scheduleReminder(
+                context = context,
+                title = uiState.eventTitle,
+                detail = uiState.eventDetail,
+                eventDateTime = eventDateTime,
+                reminderOffset = getReminderOffset(uiState.eventReminder)
+            )
+        }
+    }
+
+    fun fetchEventById(id: String) {
+
+        viewModelScope.launch {
+
+            val event = repository.getEvents().find { it.id == id }
+
+            event?.let {
+
+                eventId = it.id
+                mode = EventMode.Update
+
+                uiState = AddEventUIState(
+                    eventTitle = it.title,
+                    eventDetail = it.detail,
+                    eventDate = it.date,
+                    eventTime = it.time,
+                    eventLocation = it.location,
+                    repeatEvent = it.repeat,
+                    eventReminder = it.reminder
+                )
+            }
+        }
+    }
+    fun deleteEvent(event: Event, onResult: (Boolean) -> Unit) {
+
+        viewModelScope.launch {
+            try {
+                repository.deleteEvent(event)
+                onResult(true)
+            } catch (e: Exception) {
+                onResult(false)
+            }
+        }
+    }
+
+    fun loadEvent(event: AddEventUIState, id: String) {
         uiState = event
         mode = EventMode.Update
+        eventId = id
     }
 }

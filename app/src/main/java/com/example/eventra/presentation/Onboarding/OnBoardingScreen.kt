@@ -1,5 +1,6 @@
 package com.example.eventra.presentation.Onboarding
 
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +24,8 @@ import com.example.eventra.ui.theme.mainColor
 fun OnBoardingScreen(onFinish: () -> Unit, viewmodel: OnboardingScreenViewmodel, navController: NavController) {
 
     val currentPage by viewmodel.currentPage.collectAsState()
+    val sharedPref = navController.context.getSharedPreferences("myAppPrefs", Context.MODE_PRIVATE)
+    sharedPref.edit().putBoolean("isFirstTimeUser", false).apply()
     Column(modifier = Modifier.fillMaxSize()) {
 
 
@@ -56,14 +59,24 @@ fun OnBoardingScreen(onFinish: () -> Unit, viewmodel: OnboardingScreenViewmodel,
             onNextClick = {
                 if (currentPage < onboardingItem.lastIndex) {
                     viewmodel.nextPage(onboardingItem.size)
-                } else
-                    navController.navigate(Screen.OnBoardingAuthScreen.route)
+                } else {
+                    // Save onboarding complete
+                    val sharedPref = navController.context.getSharedPreferences("myAppPrefs", Context.MODE_PRIVATE)
+                    sharedPref.edit().putBoolean("isFirstTimeUser", false).apply()
+
+                    // Navigate to Auth or Home
+                    navController.navigate(Screen.OnBoardingAuthScreen.route){
+                        popUpTo(Screen.OnBoardingScreen.route){ inclusive = true }
+                    }
+                }
+            })
             }
-        )
+
 
 
     }
-}
+
+
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
