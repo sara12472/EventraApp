@@ -37,7 +37,7 @@ fun AuthLayout(
             .fillMaxSize()
     ) {
 
-        // 🔴 Background
+        // Background
         Image(
             painter = painterResource(id = R.drawable.rectangle),
             contentDescription = null,
@@ -45,7 +45,7 @@ fun AuthLayout(
             modifier = Modifier.matchParentSize()
         )
 
-        // 🔙 Back Button
+        // Back Button
         if (showBackButton) {
             IconButton(
                 onClick = onBackClick,
@@ -61,7 +61,7 @@ fun AuthLayout(
             }
         }
 
-        // 🟣 Logo Center
+        // Logo Center
         Image(
             painter = painterResource(R.drawable.logo),
             contentDescription = null,
@@ -71,7 +71,7 @@ fun AuthLayout(
                 .padding(top = 80.dp)
         )
 
-        // ⚪ White Card Container
+        // White Card Container
         Card(
             modifier = Modifier
                 .fillMaxWidth()

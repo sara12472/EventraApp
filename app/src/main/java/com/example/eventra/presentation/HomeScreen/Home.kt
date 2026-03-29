@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -85,7 +86,9 @@ fun Home(navController: NavController,
     }
 
     Scaffold(
-        floatingActionButton = {
+        contentWindowInsets = WindowInsets(0),
+
+                floatingActionButton = {
             // Gradient FAB
             Box(
                 modifier = Modifier
@@ -159,7 +162,7 @@ fun Home(navController: NavController,
                 Spacer(modifier = Modifier.height(30.dp))
 
 
-                // 🔴 Cards Section
+                // Cards Section
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()

@@ -61,7 +61,8 @@ fun EventDetailCard(
         Text(
             title,
             color = mainColor,
-            maxLines = 2
+            maxLines = Int.MAX_VALUE,
+            modifier = Modifier.weight(1f)
         )
         Spacer(modifier = Modifier.width(8.dp))
 

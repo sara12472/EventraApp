@@ -42,6 +42,7 @@ import kotlinx.serialization.descriptors.PrimitiveKind
 fun SignUpScreen(navController: NavController, ) {
     val context = LocalContext.current
     val viewModel: SignUpScreenViewModel = hiltViewModel()
+    val signInViewmodel: SignInViewModel=hiltViewModel()
 
    val name = viewModel.name
     val email = viewModel.email
@@ -54,30 +55,37 @@ fun SignUpScreen(navController: NavController, ) {
     val success = viewModel.signupSuccess
 
 
-    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestIdToken(context.getString(R.string.default_web_client_id))
-        .requestEmail()
-        .build()
 
-    val googleSignInClient = GoogleSignIn.getClient(context, gso)
+    val googleSignInClient = GoogleSignIn.getClient(
+        context,
+        GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(context.getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+    )
 
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
+        ActivityResultContracts.StartActivityForResult()
     ) { result ->
+
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+
         try {
             val account = task.getResult(ApiException::class.java)
-            account?.idToken?.let { idToken ->
-                viewModel.signInWithGoogle(idToken) { success, message ->
-                    if(success) {
+            val idToken = account.idToken
+
+            if (idToken != null) {
+               signInViewmodel.signInWithGoogle(idToken) { success, message ->
+                    if (success) {
                         navController.navigate(Screen.Home.route)
                     } else {
                         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                     }
                 }
             }
-        } catch (e: ApiException) {
-            Toast.makeText(context, "Google Sign-In Failed: ${e.message}", Toast.LENGTH_SHORT).show()
+
+        } catch (e: Exception) {
+            Toast.makeText(context, "Google Sign-In Failed", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -167,8 +175,7 @@ fun SignUpScreen(navController: NavController, ) {
                         when(icon){
                             R.drawable.google -> {
 
-                                val signInIntent = googleSignInClient.signInIntent
-                                launcher.launch(signInIntent)
+                                launcher.launch(googleSignInClient.signInIntent)
 
 
                             }

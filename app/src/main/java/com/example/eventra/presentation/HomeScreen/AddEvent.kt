@@ -103,7 +103,7 @@ fun AddEvent(navController: NavController,
         "30 minutes before",
         "1 hour before",
         "1 day before")
-
+    var showConflictDialog by remember { mutableStateOf(false) }
     /*LaunchedEffect(eventId) {
         if (eventId != null && eventId != "new" ) {
             viewModel.mode = EventMode.Update
@@ -243,6 +243,11 @@ fun AddEvent(navController: NavController,
                         AppButton(
                             text=if (isAddMode) "ADD EVENT" else "UPDATE EVENT",
                             onClick = {
+                                if (!viewModel.isValid()) {
+                                    Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                                    return@AppButton
+                                }
+
                                 Log.d("REMINDER_DEBUG", "Button clicked")
                                 val action: (Boolean) -> Unit = { success ->
 
@@ -268,7 +273,15 @@ fun AddEvent(navController: NavController,
 
                                 if (isAddMode) {
 
-                                    viewModel.addEvent(context, action)
+                                    viewModel.addEvent(context) { success, message ->
+
+                                        if (!success && message.contains("already exists")) {
+                                            showConflictDialog = true // 🔥 show dialog
+                                        } else {
+                                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                            if (success) navController.popBackStack()
+                                        }
+                                    }
 
                                 } else {
 
@@ -383,6 +396,35 @@ fun AddEvent(navController: NavController,
             ) {
                 DatePicker(state = datePickerState)
             }
+        }
+        if (showConflictDialog) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showConflictDialog = false },
+                title = { Text("Warning") },
+                text = { Text("Event already exists at this time. Do you want to add anyway?") },
+
+                confirmButton = {
+                    TextButton(onClick = {
+                        showConflictDialog = false
+
+                        // 🔥 FORCE ADD
+                        viewModel.addEvent(context, forceAdd = true) { success, message ->
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            if (success) navController.popBackStack()
+                        }
+                    }) {
+                        Text("Add Anyway")
+                    }
+                },
+
+                dismissButton = {
+                    TextButton(onClick = {
+                        showConflictDialog = false
+                    }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
 
 

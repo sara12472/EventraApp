@@ -84,8 +84,8 @@ fun AppTextField(
 
 
         colors = TextFieldDefaults.colors(
-            focusedTextColor = Color.Black,
-            unfocusedTextColor = Color.Black,
+            focusedTextColor = if (ThemeSettings.isDarkTheme) Color.White else Color.Black,
+            unfocusedTextColor = if (ThemeSettings.isDarkTheme) Color.White else Color.Black,
             disabledTextColor = Color.Gray,
            focusedContainerColor = Color.Transparent,
             unfocusedContainerColor = Color.Transparent,

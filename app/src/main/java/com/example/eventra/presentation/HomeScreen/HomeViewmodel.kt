@@ -93,7 +93,7 @@ class HomeViewmodel @Inject constructor (private val repository: EventRepository
         }
     }
 
-    // 🔹 Fetch events for a specific date
+    // Fetch events for a specific date
     private fun fetchEventForDate(date: String) {
         viewModelScope.launch {
             try {
@@ -119,7 +119,7 @@ class HomeViewmodel @Inject constructor (private val repository: EventRepository
         }
     }
 
-    // 🔹 Delete event
+    // Delete event
     fun deleteEvent(event: Event, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
@@ -132,7 +132,7 @@ class HomeViewmodel @Inject constructor (private val repository: EventRepository
         }
     }
 
-    // 🔹 Schedule reminder
+    // Schedule reminder
 
     fun resetDate(){
         selectedDate = "SELECT DATE"

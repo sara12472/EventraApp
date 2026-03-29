@@ -87,6 +87,12 @@ class AddEventViewmodel @Inject constructor(
         reminderOffset: Long
     ) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val sharedPref = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        val notificationsEnabled = sharedPref.getBoolean("notificationsEnabled", true)
+        if (!notificationsEnabled) {
+            Log.d("REMINDER_DEBUG", "Notifications disabled by user, skipping alarm")
+            return
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12+
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             if (!alarmManager.canScheduleExactAlarms()) {
@@ -137,8 +143,24 @@ class AddEventViewmodel @Inject constructor(
             Log.e("REMINDER_DEBUG", "Failed to schedule exact alarm: ${e.message}")
         }
     }
+    fun isValid(): Boolean {
+        return uiState.eventTitle.isNotBlank() &&
+                uiState.eventDate.isNotBlank() &&
+                uiState.eventTime.isNotBlank() &&
+                uiState.eventLocation.isNotBlank() &&
+                uiState.eventDetail.isNotBlank() &&
+                uiState.repeatEvent.isNotBlank() &&
+                uiState.eventReminder.isNotBlank()
+    }
+    suspend fun isEventAlreadyExists(date: String, time: String): Boolean {
+        val events = repository.getEvents()
+        return events.any { it.date == date && it.time == time }
+    }
 
-    fun addEvent(context: Context, onResult: (Boolean) -> Unit) {
+
+    fun addEvent(context: Context,
+                 forceAdd: Boolean = false,
+                 onResult: (Boolean, String) -> Unit) {
         Log.d("REMINDER_DEBUG", "addEvent called")
 
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
@@ -146,9 +168,19 @@ class AddEventViewmodel @Inject constructor(
         viewModelScope.launch {
             try {
 
+
+                val exists = isEventAlreadyExists(
+                    uiState.eventDate,
+                    uiState.eventTime
+                )
+
+                if (exists && !forceAdd) {
+                    onResult(false, "Event already exists. Do you want to add anyway?")
+                    return@launch
+                }
+
                 val event = Event(
-                  //  id = "",
-                    userId=userId,
+                    userId = userId,
                     title = uiState.eventTitle,
                     detail = uiState.eventDetail,
                     date = uiState.eventDate,
@@ -162,10 +194,10 @@ class AddEventViewmodel @Inject constructor(
 
                 scheduleReminderIfNeeded(context)
 
-                onResult(true)
+                onResult(true, "Event added successfully")
 
             } catch (e: Exception) {
-                onResult(false)
+                onResult(false, "Error adding event")
             }
         }
     }

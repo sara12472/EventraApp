@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -34,39 +36,52 @@ fun EventsCard(
 
     ) {
     Card(
-        modifier = modifier.fillMaxWidth().clickable { onClick() },
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 16.dp, bottomEnd = 16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor ?: Color.Transparent
         )
     ) {
-        Column(modifier = Modifier.fillMaxWidth().then(
-            if (backgroundBrush != null)
-                Modifier.background(backgroundBrush)
-            else Modifier
-        ).padding(12.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(
+                    if (backgroundBrush != null)
+                        Modifier.background(backgroundBrush)
+                    else Modifier
+                )
+                .padding(12.dp)
+        ) {
 
+            // Title
             Text(
                 text = title,
-                color =   if (backgroundBrush != null) Color.White else mainColor,
+                color = if (backgroundBrush != null) Color.White else mainColor,
                 fontWeight = FontWeight.Bold
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            items.forEachIndexed { index, item ->
+            // Empty State
+            if (items.isEmpty()) {
                 Text(
-                    text = item,
+                    text = "No events yet",
                     color = if (backgroundBrush != null) Color.White else mainColor
                 )
-
-                if (index != items.lastIndex) { // add space after all but last item
-                    Spacer(modifier = Modifier.height(8.dp)) // adjust height as needed
+            } else {
+                // Show only 2 items (no scroll needed)
+                items.take(2).forEach { item ->
+                    Text(
+                        text = item,
+                        color = if (backgroundBrush != null) Color.White else mainColor
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
     }
-
 }
 
 @Preview

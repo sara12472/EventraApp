@@ -116,25 +116,7 @@ class SignUpScreenViewModel @Inject constructor(private val repository: AuthRepo
 
         }
     }
-    fun signInWithGoogle(idToken: String, onResult: (Boolean, String) -> Unit) {
 
-        viewModelScope.launch {
-
-            val result = repository.signInWithGoogle(idToken)
-
-            if (result.isSuccess) {
-                loginSuccess = true
-                loginMessage = "Google Login Successful"
-                onResult(true, loginMessage)
-            } else {
-                loginSuccess = false
-                loginMessage =
-                    result.exceptionOrNull()?.message ?: "Google login failed"
-                onResult(false, loginMessage)
-            }
-
-        }
-    }
 
 
 }

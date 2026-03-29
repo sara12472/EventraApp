@@ -32,7 +32,7 @@ fun AuthBottomSection(
     bottomText: String,
     clickableText: String,
     onClick: () -> Unit,
-    icons: List<Int>,   // icons parameter
+    icons: List<Int>,
     onIconClick: (Int) -> Unit = {},
 ) {
     Column(

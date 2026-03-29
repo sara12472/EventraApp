@@ -22,6 +22,7 @@ import com.example.eventra.presentation.HomeScreen.HomeViewmodel
 import com.example.eventra.presentation.HomeScreen.TodayEventDetailScreen
 import com.example.eventra.presentation.HomeScreen.UpcomingEventDetailScreen
 import com.example.eventra.presentation.SettingScreen.SettingScreen
+import com.example.eventra.presentation.SettingScreen.TermsAndCondition
 import com.example.eventra.presentation.SplashScreen
 import com.example.eventra.presentation.forgetPasswordScreen.ForgetPasswordScreen
 import com.google.firebase.firestore.FirebaseFirestore
@@ -116,6 +117,10 @@ fun AppNavigation() {
         composable(Screen.ForgetPasswordScreen.route) {
             ForgetPasswordScreen(navController)
         }
+        composable(Screen.TermsAndConditionScreen.route) {
+            TermsAndCondition(navController)
+        }
+
 
 
     }
