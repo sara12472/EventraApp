@@ -1,43 +1,64 @@
-Eventra is a modern and user-friendly Event Management Android application built using Kotlin and Jetpack Compose. 
-It helps users organize their daily events, set reminders, and stay productive.
-✨ Features
-📅 Create and manage events easily
-⏰ Smart reminders and notifications
-📝 Clean and simple UI
-🚀 Smooth onboarding experience
-🔐 Authentication screens (Sign In / Sign Up)
+# 📱 Eventra App
 
-🛠️ Tech Stack
-Kotlin
-Jetpack Compose
-MVVM Architecture
-Navigation Component
-SharedPreferences
+Eventra is a modern and user-friendly **Event Management Android App** built using **Kotlin & Jetpack Compose**.  
+It helps users manage events, set reminders, and stay organized in daily life.
 
-📸 Screenshots
+---
 
-app/overview.png
-app/onboarding.jpg
-app/signup.png
-app/login.png
-app/home.png
-app/ad event.jpg
-app/settings.png
-app/dark mode.png
+## ✨ Features
 
+- 📅 Create & manage events easily  
+- 🔔 Smart reminders & notifications  
+- 🎯 Clean and modern UI/UX  
+- 🚀 Smooth onboarding experience  
+- 🔐 Authentication (Sign In / Sign Up)  
+- 🌙 Dark mode support  
+- ⚙️ Settings & customization  
 
-🎯 Purpose
-This project showcases my skills in Android Development, UI/UX Design, and building modern mobile applications using Jetpack Compose.
+---
 
-🚀 Getting Started
-Clone the repository
-Open in Android Studio
-Run the app on emulator or device
-👩‍💻 Author
+## 🛠 Tech Stack
 
-Sara Mahmood
-Android Developer | UI/UX Designer
+- Kotlin  
+- Jetpack Compose  
+- MVVM Architecture  
+- Navigation Component  
+- SharedPreferences  
 
-⭐ Support
+---
 
-If you like this project, please give it a ⭐ on GitHub!
+## 📸 Screenshots
+
+<p align="center">
+  <img src="app/overview.png" width="220"/>
+  <img src="app/onboarding.jpg" width="220"/>
+  <img src="app/signup.png" width="220"/>
+</p>
+
+<p align="center">
+  <img src="app/login.png" width="220"/>
+  <img src="app/home.png" width="220"/>
+  <img src="app/ad_event.jpg" width="220"/>
+</p>
+
+<p align="center">
+  <img src="app/settings.png" width="220"/>
+  <img src="app/dark_mode.png" width="220"/>
+</p>
+
+---
+
+## 🎯 Purpose
+
+This project showcases my skills in:
+- Android Development 📱  
+- UI/UX Design 🎨  
+- Building real-world applications using Jetpack Compose 🚀  
+
+---
+
+## 🚀 Getting Started
+
+1. Clone the repository  
+   ```bash
+   git clone https://github.com/your-username/EventraApp.git
