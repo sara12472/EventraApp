@@ -61,4 +61,4 @@ This project showcases my skills in:
 
 1. Clone the repository  
    ```bash
-   git clone https://github.com/sara12472/EventraApp
+   git clone https://github.com/sara12472/EventraApp/tree/master/app
