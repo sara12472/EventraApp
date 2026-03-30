@@ -38,12 +38,12 @@ It helps users manage events, set reminders, and stay organized in daily life.
 <p align="center">
   <img src="app/login.png" width="220"/>
   <img src="app/home.png" width="220"/>
-  <img src="app/ad_event.jpg" width="220"/>
+  <img src="app/adevent.jpg" width="220"/>
 </p>
 
 <p align="center">
   <img src="app/settings.png" width="220"/>
-  <img src="app/dark_mode.png" width="220"/>
+  <img src="app/darkmode.png" width="220"/>
 </p>
 
 ---
@@ -61,4 +61,4 @@ This project showcases my skills in:
 
 1. Clone the repository  
    ```bash
-   git clone https://github.com/your-username/EventraApp.git
+   git clone https://github.com/sara12472/EventraApp
