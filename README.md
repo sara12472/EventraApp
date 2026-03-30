@@ -15,6 +15,14 @@ Navigation Component
 SharedPreferences
 
 📸 Screenshots
+app/overview.png
+app/onboarding.jpg
+app/signup.png
+app/login.png
+app/home.png
+app/ad event.jpg
+app/settings.png
+app/dark mode.png
 
 
 🎯 Purpose
