@@ -34,30 +34,33 @@ fun OnboardingTopBar(
     onSkipClick: () -> Unit,
     modifier: Modifier
 ) {
-    Row(modifier = modifier.fillMaxWidth().padding(horizontal = 15.dp,
-        ), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-       if(showStartIcon){
-           IconButton(onClick = onBackClick) {
-               Icon(
-                   imageVector = image,
-                   contentDescription = null,
-                   tint = iconColor
-               )
-           }
-       }
-        else
-       {
-           Spacer(modifier = Modifier.size(48.dp))
-       }
+
+        if (showStartIcon) {
+            IconButton(onClick = onBackClick) {
+                Icon(
+                    imageVector = image,
+                    contentDescription = "Back",
+                    tint = iconColor
+                )
+            }
+        } else {
+            Spacer(modifier = Modifier.size(48.dp))
+        }
+
         Text(
             text = textButton,
             modifier = Modifier.clickable { onSkipClick() },
             fontWeight = FontWeight.Medium,
             color = mainColor,
-            fontSize = 15.sp,
-            )
-
+            fontSize = 15.sp
+        )
     }
 
 }

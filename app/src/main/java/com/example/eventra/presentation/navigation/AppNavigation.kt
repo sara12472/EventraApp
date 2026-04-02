@@ -52,7 +52,8 @@ fun AppNavigation() {
                         }
                     }
                 },
-               viewmodel = viewModel, navController
+                viewmodel = viewModel,
+                navController = navController
             )
         }
         composable(Screen.OnBoardingAuthScreen.route){

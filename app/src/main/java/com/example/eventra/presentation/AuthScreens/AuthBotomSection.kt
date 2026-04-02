@@ -37,57 +37,82 @@ fun AuthBottomSection(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp)
     ) {
-        // "Sign in with" text and divider
+
+        // 🔹 Divider + Text
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
         ) {
             Divider(modifier = Modifier.weight(1f), color = Color.Gray)
+
             Text(
                 text = "  Sign in with  ",
                 color = Color.Gray,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                fontSize = 12.sp
             )
+
             Divider(modifier = Modifier.weight(1f), color = Color.Gray)
         }
-        Spacer(modifier = Modifier.height(40.dp))
 
-        // Social login icons
+        Spacer(modifier = Modifier.height(20.dp)) // ✅ reduced
+
+        // 🔹 Icons (responsive spacing)
         Row(
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier.fillMaxWidth(0.7f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             icons.forEach { icon ->
-
                 Icon(
                     painter = painterResource(id = icon),
                     contentDescription = null,
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(36.dp)
                         .clickable { onIconClick(icon) },
                     tint = Color.Unspecified
                 )
-
             }
         }
 
-        Spacer(modifier = Modifier.height(40.dp))
-        // Bottom clickable text
-        Row {
-            Text(text = bottomText,
-                fontSize = 16.sp,
-                color = Color.Gray)
+        Spacer(modifier = Modifier.height(20.dp)) // ✅ reduced
+
+        // 🔹 Bottom Text (FIXED 🔥)
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Text(
+                text = bottomText,
+                fontSize = 13.sp,
+                color = Color.Gray,
+                maxLines = 1
+            )
+
             Spacer(modifier = Modifier.width(4.dp))
+
             Text(
                 text = clickableText,
-                color = mainColor, // your primary color
-                fontWeight = FontWeight.Normal,
-                fontSize = 16.sp,
+                color = mainColor,
+                fontSize = 13.sp,
+                maxLines = 1,
                 modifier = Modifier.clickable { onClick() }
             )
         }
+
+
+
     }
 }
 

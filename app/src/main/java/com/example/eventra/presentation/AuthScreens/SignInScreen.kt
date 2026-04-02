@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -91,101 +92,113 @@ fun SignInScreen(navController: NavController,
         onBackClick = {navController.popBackStack()},
         content = {
 
-            Column(modifier = Modifier.fillMaxSize().padding(top = 50.dp, start = 15.dp, end=10.dp),
-                //verticalArrangement = Arrangement.Center,
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // 🔼 TOP SECTION
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.Start
                 ) {
-Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
-    AppTextField(
-        value = email,
-        onValueChange = {viewModel.onEmailChange(it)},
-        placeholder = "Email",
-    )
-    if (emailError.isNotEmpty()) {
-        ErrorMessageSignIn(emailError)
-    }
-}
-                Spacer(modifier = Modifier.height(15.dp))
-                Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
+
+                    AppTextField(
+                        value = email,
+                        onValueChange = { viewModel.onEmailChange(it) },
+                        placeholder = "Email",
+                    )
+                    if (emailError.isNotEmpty()) {
+                        ErrorMessageSignIn(emailError)
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     AppTextField(
                         value = password,
-                        onValueChange = {viewModel.onPasswordChange(it)},
+                        onValueChange = { viewModel.onPasswordChange(it) },
                         placeholder = "Password",
                     )
                     if (passwordError.isNotEmpty()) {
-                   ErrorMessageSignIn(passwordError)
+                        ErrorMessageSignIn(passwordError)
                     }
-                }
 
-                Spacer(modifier = Modifier.height(10.dp))
-                Row(modifier = Modifier.fillMaxWidth().padding(end = 15.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                   // horizontalArrangement = Arrangement.SpaceBetween
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
 
-                    Row(modifier = Modifier.weight(1f),
-                        verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = rememberMe,
-                            onCheckedChange = {viewModel.onRememberMeChange(it)}
-                        )
-                        Text(text = "Remember me", fontSize = 10.sp)
-
-                    }
-
-                    Text(
-                        text = "Forgot Password?",
-                        color = mainColor,
-                        fontSize = 10.sp,
-                        modifier = Modifier.clickable {
-
-                                navController.navigate(Screen.ForgetPasswordScreen.route)                            }
-
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(40.dp))
-
-                AppButton(
-                    text = "SIGN IN",
-                    onClick = {
-                        viewModel.signIn { success, message ->
-                            if(success){
-                                navController.navigate(Screen.Home.route)
-                            }
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = rememberMe,
+                                onCheckedChange = { viewModel.onRememberMeChange(it) }
+                            )
+                            Text(
+                                text = "Remember me",
+                                fontSize = 12.sp
+                            )
                         }
-                    },
-                    modifier = Modifier.width(276.dp)
-                        .height(64.dp)
-                )
 
-                Spacer(modifier = Modifier.height(40.dp))
-                AuthBottomSection(
-                    bottomText = "Don't have an account?",
-                    clickableText = "Sign up",
-                    icons = listOf(
-                        R.drawable.google,
-                        R.drawable.facebook,
-                        R.drawable.apple
-                    ),
-                    onIconClick = { icon ->
-                        when(icon){
-                            R.drawable.google -> {
+                        Text(
+                            text = "Forgot Password?",
+                            color = mainColor,
+                            fontSize = 12.sp,
+                            modifier = Modifier.clickable {
+                                navController.navigate(Screen.ForgetPasswordScreen.route)
+                            }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // 🔽 BOTTOM SECTION
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    AppButton(
+                        text = "SIGN IN",
+                        onClick = {
+                            viewModel.signIn { success, _ ->
+                                if (success) {
+                                    navController.navigate(Screen.Home.route)
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth(0.75f)
+                            .height(54.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    AuthBottomSection(
+                        bottomText = "Don't have an account?",
+                        clickableText = "Sign up",
+                        icons = listOf(
+                            R.drawable.google,
+                            R.drawable.facebook,
+                            R.drawable.apple
+                        ),
+                        onIconClick = { icon ->
+                            if (icon == R.drawable.google) {
                                 launcher.launch(googleSignInClient.signInIntent)
                             }
-                            R.drawable.facebook -> {
-                                // Facebook login
-                            }
+                        },
+                        onClick = {
+                            navController.navigate(Screen.SignUpScreen.route)
                         }
-                    },
-                    onClick = {
-                        navController.navigate(Screen.SignUpScreen.route)
-                    }
-                )
-
-
-
-
+                    )
+                }
             }
 
         }

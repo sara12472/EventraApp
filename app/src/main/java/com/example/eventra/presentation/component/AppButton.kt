@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -30,37 +31,32 @@ fun AppButton(
     onClick:  () -> Unit,
     modifier: Modifier= Modifier,
 ) {
-   Button(
-       onClick = onClick,
-       modifier=modifier,
-       colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), // transparent
-       contentPadding = PaddingValues(),
+    Button(
+        onClick = onClick,
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+        contentPadding = PaddingValues(0.dp) // 🔥 important fix
+    ) {
 
-
-   ) {
-       Box(
-           modifier = Modifier
-               .fillMaxHeight()
-               .fillMaxWidth()
-               .background(
-                   brush = AppGradient,
-                   shape = RoundedCornerShape(30.dp)
-               ),
-
-           contentAlignment = Alignment.Center
-           )
-       {
-           Text(text = text,
-               fontSize = 24.sp,
-               fontWeight = FontWeight.Medium,
-               fontFamily = myFont,
-               color = Color.White
-
-               )
-
-       }
-
-   }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()   // ✅ change here (not height/width separately)
+                .background(
+                    brush = AppGradient,
+                    shape = RoundedCornerShape(30.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = text,
+                fontSize = 18.sp, // 🔥 reduce from 24sp (better fit)
+                fontWeight = FontWeight.Medium,
+                fontFamily = myFont,
+                color = Color.White,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+        }
+    }
 
 }
 

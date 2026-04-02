@@ -95,48 +95,51 @@ fun SignUpScreen(navController: NavController, ) {
         onBackClick = {navController.popBackStack()},
         content = {
 
-            Column(modifier = Modifier.fillMaxSize().padding(top = 25.dp, start = 15.dp, end=10.dp),
-                //verticalArrangement = Arrangement.Center,
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
+
+                Spacer(modifier = Modifier.height(20.dp)) // top gap
+
+                // 🔼 INPUT SECTION
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.Start
+                ) {
+
                     AppTextField(
                         value = name,
-                        onValueChange = {viewModel.onNameChange(it)},
+                        onValueChange = { viewModel.onNameChange(it) },
                         placeholder = "Name",
                     )
-                    if (viewModel.nameError) {
-                        ErrorMessage("* Required")
-                    }
-                }
+                    if (viewModel.nameError) ErrorMessage("* Required")
 
-                Spacer(modifier = Modifier.height(10.dp))
-                Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     AppTextField(
                         value = email,
-                        onValueChange = {viewModel.onEmailChange(it)},
+                        onValueChange = { viewModel.onEmailChange(it) },
                         placeholder = "Email",
                     )
                     if (viewModel.emailError.isNotEmpty()) {
                         ErrorMessage(viewModel.emailError)
                     }
-                }
 
-                Spacer(modifier = Modifier.height(10.dp))
-                        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     AppTextField(
                         value = password,
                         onValueChange = { viewModel.onPasswordChange(it) },
                         placeholder = "Password",
                         isPassword = true,
                     )
-                    if (viewModel.passwordError) {
-                        ErrorMessage("* Required")
-                    }
-                }
+                    if (viewModel.passwordError) ErrorMessage("* Required")
 
-                Spacer(modifier = Modifier.height(10.dp))
-                Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     AppTextField(
                         value = confirmPassword,
                         onValueChange = { viewModel.onConfirmPasswordChange(it) },
@@ -148,50 +151,46 @@ fun SignUpScreen(navController: NavController, ) {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(24.dp)) // button gap
 
-                AppButton(
-                    text = "SIGN UP",
-                    onClick = {
-                        viewModel.signUp { success, message ->
-                            if (success) navController.navigate(Screen.SignInScreen.route)
-                            else Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    modifier = Modifier.width(276.dp)
-                        .height(64.dp)
-                )
+                // 🔽 BUTTON + BOTTOM
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
 
-                Spacer(modifier = Modifier.height(40.dp))
-                AuthBottomSection(
-                    bottomText = "Already have an account?",
-                    clickableText = "Sign in",
-                    icons = listOf(
-                        R.drawable.google,
-                        R.drawable.facebook,
-                        R.drawable.apple
-                    ),
-                    onIconClick = { icon ->
-                        when(icon){
-                            R.drawable.google -> {
+                    AppButton(
+                        text = "SIGN UP",
+                        onClick = {
+                            viewModel.signUp { success, message ->
+                                if (success) navController.navigate(Screen.SignInScreen.route)
+                                else Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth(0.75f)   // ✅ responsive width
+                            .height(52.dp)
+                    )
 
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    AuthBottomSection(
+                        bottomText = "Already have an account?",
+                        clickableText = "Sign in",
+                        icons = listOf(
+                            R.drawable.google,
+                            R.drawable.facebook,
+                            R.drawable.apple
+                        ),
+                        onIconClick = { icon ->
+                            if (icon == R.drawable.google) {
                                 launcher.launch(googleSignInClient.signInIntent)
-
-
                             }
-                            R.drawable.facebook -> {
-                                // Facebook login
-                            }
+                        },
+                        onClick = {
+                            navController.navigate(Screen.SignInScreen.route)
                         }
-                    },
-                    onClick = {
-                        navController.navigate(Screen.SignInScreen.route)
-                    }
-                )
-
-
-
-
+                    )
+                }
             }
 
         }

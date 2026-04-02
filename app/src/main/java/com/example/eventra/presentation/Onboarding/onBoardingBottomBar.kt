@@ -22,41 +22,49 @@ import com.example.eventra.ui.theme.mainColor
 
 @Composable
 fun OnBoardingBottomBar(
-pageCount:Int=3,
-currentPage: Int,
-onNextClick: () -> Unit
+    pageCount: Int = 3,
+    currentPage: Int,
+    onNextClick: () -> Unit,
+    modifier: Modifier
 ) {
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row {
+
+        // 🔵 DOTS (responsive wrap)
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             repeat(pageCount) { index ->
                 Box(
                     modifier = Modifier
-                        .padding(4.dp)
-                        .size(10.dp)
+                        .padding(3.dp)
+                        .size(if (index == currentPage) 10.dp else 8.dp)
                         .background(
-                            color = if (index == currentPage) mainColor else Color.Gray
+                            color = if (index == currentPage) mainColor else Color.LightGray
                         )
                 )
-
             }
         }
 
-        AppButton(text = if (currentPage == pageCount-1) "GET STARTED" else "NEXT" , onClick = onNextClick, modifier = Modifier.width(190.dp).height(47.dp))
+        // 🔘 BUTTON (responsive width)
+        AppButton(
+            text = if (currentPage == pageCount - 1) "GET STARTED" else "NEXT",
+            onClick = onNextClick,
+            modifier = Modifier
+                .height(48.dp)
+                .fillMaxWidth(0.55f)   // 👈 responsive width fix
+        )
     }
 }
 @Preview()
 @Composable
 fun BottomBarPreview(){
-    val currentPage= remember { mutableStateOf(0) }
-    OnBoardingBottomBar(
-        currentPage=currentPage.value,
-        onNextClick = {currentPage.value = (currentPage.value + 1) % 3}
-    )
+
+
 }

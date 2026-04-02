@@ -8,6 +8,7 @@ import com.example.eventra.R
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,74 +43,97 @@ import com.example.eventra.ui.theme.myFont
 @Composable
 fun OnboardingAuthScreen(navController: NavController) {
 
-Box(modifier = Modifier.fillMaxSize()) {
-    Image(
-        painter = painterResource(id= R.drawable.rectangle),
-        contentDescription = "background image",
-        contentScale = ContentScale.Crop,
-        modifier = Modifier.fillMaxHeight()
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
 
-    )
-    OnboardingTopBar(
-        showStartIcon = true,
-        image = Icons.Default.ArrowBack,
-        textButton = "",
-        onBackClick = {navController.popBackStack()},
-        onSkipClick = {},
-        iconColor = Color.White,
-        modifier = Modifier.padding(top = 50.dp)
-    )
+        // Background
+        Image(
+            painter = painterResource(id = R.drawable.rectangle),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
 
-    Column(verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        modifier=Modifier.padding(vertical =20.dp).align(Alignment.Center)
-        
+        // Top bar
+        OnboardingTopBar(
+            showStartIcon = true,
+            image = Icons.Default.ArrowBack,
+            textButton = "",
+            onBackClick = { navController.popBackStack() },
+            onSkipClick = {},
+            iconColor = Color.White,
+            modifier = Modifier
+                .padding(top = 50.dp)
+                .fillMaxWidth()
+        )
+
+        // Content
+        Column(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-        Image(
-                painter = painterResource(id=R.drawable.pana3),
-                modifier = Modifier.height(300.dp).width(300.dp),
+            // Image (responsive)
+            Image(
+                painter = painterResource(id = R.drawable.pana3),
                 contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth(0.75f)
+                    .aspectRatio(1f)
+            )
 
-                )
+            Spacer(modifier = Modifier.height(24.dp))
 
-
-        Spacer(modifier = Modifier.height(40.dp))
-            Text(text = "Get started and take\n " +
-                    "control of your day",
-                fontSize = 24.sp,
+            Text(
+                text = "Get started and take\ncontrol of your day",
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = myFont,
                 color = Color.White,
                 textAlign = TextAlign.Center
+            )
 
-                )
-        Spacer(modifier = Modifier.height(100.dp))
-            Text(text = "Access your account and create\n" +
-                    "a new one",
-                fontSize = 15.sp,
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Access your account and create\na new one",
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Normal,
                 fontFamily = myFont,
                 color = Color.White,
-                textAlign = TextAlign.Center
-
+                textAlign = TextAlign.Center,
+                lineHeight = 20.sp
             )
 
-        Spacer(modifier = Modifier.height(10.dp))
-        Column(modifier = Modifier.padding((20.dp))) {
-            AuthButton(text = "SIGN IN", isFilled = true, onClick = {
-                navController.navigate(Screen.SignInScreen.route)
-            })
-            Spacer(modifier = Modifier.height(20.dp))
-            AuthButton(text = "SIGN UP", isFilled = false, onClick = {
-                navController.navigate(Screen.SignUpScreen.route)
-            })
+            Spacer(modifier = Modifier.height(35.dp))
 
+            Column(modifier = Modifier.fillMaxWidth()) {
+
+                AuthButton(
+                    text = "SIGN IN",
+                    isFilled = true,
+                    onClick = {
+                        navController.navigate(Screen.SignInScreen.route)
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                AuthButton(
+                    text = "SIGN UP",
+                    isFilled = false,
+                    onClick = {
+                        navController.navigate(Screen.SignUpScreen.route)
+                    }
+                )
+            }
         }
-
     }
-
-}
 
 
         }

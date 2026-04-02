@@ -1,9 +1,11 @@
 package com.example.eventra.presentation.Onboarding
 
 import android.media.Image
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,37 +36,53 @@ fun OnboardingContent(
     description: String,
     modifier: Modifier,
 ) {
-    Column(modifier = Modifier.padding(horizontal = 24.dp,),
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally) {
-        androidx.compose.foundation.Image(
-            painter = painterResource(id=image),
-            modifier = Modifier.height(290.dp).width(290.dp),
-            contentDescription = null,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
 
+        Image(
+            painter = painterResource(id = image),
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .aspectRatio(1f)
         )
-        Spacer(modifier = Modifier.height(50.dp))
-        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
-            Text(text = tittle,
-                fontSize = 24.sp,
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally // 🔥 ADD THIS
+
+        ) {
+
+            Text(
+                text = tittle,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                fontFamily = myFont,
-                color = mainColor
+                color = mainColor,
+                textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(text = description,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Normal,
-                fontFamily = myFont,
-                color = Color.Black
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = description,
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                color = Color.Black,
+                textAlign = TextAlign.Center
             )
         }
-
-
     }
-
-
 }
+
+
+
 @Preview()
 @Composable
 fun OnboardingCenterContentPreview() {

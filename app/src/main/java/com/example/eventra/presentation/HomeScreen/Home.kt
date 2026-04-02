@@ -86,7 +86,7 @@ fun Home(navController: NavController,
     }
 
     Scaffold(
-        contentWindowInsets = WindowInsets(0),
+       // contentWindowInsets = WindowInsets(0),
 
                 floatingActionButton = {
             // Gradient FAB
@@ -302,7 +302,7 @@ fun Home(navController: NavController,
                         modifier = Modifier.fillMaxWidth()
                     )*/
 
-                    Spacer(modifier = Modifier.height(100.dp)) // space for FAB
+                   // Spacer(modifier = Modifier.height(100.dp)) // space for FAB
                 }
             }
         }
